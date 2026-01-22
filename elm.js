@@ -6900,7 +6900,7 @@ var $author$project$View$vueSelonEtat = function (model) {
 	var _v0 = model.etat;
 	switch (_v0.$) {
 		case 'ChargementMots':
-			return $author$project$View$texteSimple('Chargement des mots...');
+			return $author$project$View$texteSimple('Chargement des mots....');
 		case 'ChoixMot':
 			return $author$project$View$texteSimple('Choix du mot...');
 		case 'ChargementDefinitions':
