@@ -6221,7 +6221,7 @@ var $author$project$Words$chargerMots = $elm$http$Http$get(
 					return $author$project$Types$Echec('Impossible de charger Words.txt');
 				}
 			}),
-		url: '../data/Words.txt'
+		url: 'data/Words.txt'
 	});
 var $author$project$Types$ChargementMots = {$: 'ChargementMots'};
 var $author$project$Types$modeleInitial = {definitions: _List_Nil, etat: $author$project$Types$ChargementMots, message: '', motSecret: '', mots: _List_Nil, saisie: ''};
@@ -6236,6 +6236,7 @@ var $author$project$Types$Erreur = function (a) {
 	return {$: 'Erreur', a: a};
 };
 var $author$project$Types$Gagne = {$: 'Gagne'};
+var $author$project$Types$Perdu = {$: 'Perdu'};
 var $author$project$Types$Pret = {$: 'Pret'};
 var $author$project$Types$DefinitionsChargees = function (a) {
 	return {$: 'DefinitionsChargees', a: a};
@@ -6527,6 +6528,7 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$String$toLower = _String_toLower;
@@ -6547,7 +6549,6 @@ var $elm$core$List$filter = F2(
 			list);
 	});
 var $elm$core$String$lines = _String_lines;
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Words$parserMots = function (contenu) {
 	return A2(
 		$elm$core$List$filter,
@@ -6569,7 +6570,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							etat: $author$project$Types$Erreur('Le fichier words.txt est vide.')
+							etat: $author$project$Types$Erreur('Le fichier Words.txt est vide.')
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					_Utils_update(
@@ -6598,17 +6599,29 @@ var $author$project$Main$update = F2(
 						{saisie: texte}),
 					$elm$core$Platform$Cmd$none);
 			case 'Verifier':
-				var secretOk = $author$project$Main$normaliser(model.motSecret);
-				var saisieOk = $author$project$Main$normaliser(model.saisie);
-				return _Utils_eq(saisieOk, secretOk) ? _Utils_Tuple2(
+				return (!_Utils_eq(model.etat, $author$project$Types$Pret)) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : (_Utils_eq(
+					$author$project$Main$normaliser(model.saisie),
+					$author$project$Main$normaliser(model.motSecret)) ? _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{etat: $author$project$Types$Gagne, message: 'Bravo ! Tu as trouvé.'}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{message: 'Faux, réessaie.'}),
-					$elm$core$Platform$Cmd$none);
+						{etat: $author$project$Types$Perdu, message: 'Faux. La bonne réponse était : ' + model.motSecret}),
+					$elm$core$Platform$Cmd$none));
+			case 'NouveauMot':
+				return $elm$core$List$isEmpty(model.mots) ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							etat: $author$project$Types$Erreur('Liste de mots vide.')
+						}),
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{definitions: _List_Nil, etat: $author$project$Types$ChoixMot, message: '', motSecret: '', saisie: ''}),
+					$author$project$Words$choisirMot(model.mots));
 			default:
 				var msgErr = msg.a;
 				return _Utils_Tuple2(
@@ -6621,16 +6634,135 @@ var $author$project$Main$update = F2(
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$View$carte = function (contenu) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.06)'),
+				A2($elm$html$Html$Attributes$style, 'border-radius', '16px'),
+				A2($elm$html$Html$Attributes$style, 'padding', '18px')
+			]),
+		_List_fromArray(
+			[contenu]));
+};
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$View$entete = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'margin-bottom', '18px')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$h1,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'margin', '0'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '32px')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('GuessIt')
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'opacity', '0.85')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Lis les définitions et devine le mot.')
+				]))
+		]));
+var $author$project$View$texteSimple = function (t) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'opacity', '0.85')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(t)
+			]));
+};
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$View$listeDefinitions = function (defs) {
+	return A2(
+		$elm$html$Html$ul,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'line-height', '1.55'),
+				A2($elm$html$Html$Attributes$style, 'padding-left', '18px')
+			]),
+		A2(
+			$elm$core$List$map,
+			function (d) {
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(d.texte)
+						]));
+			},
+			defs));
+};
+var $author$project$View$messageBox = F2(
+	function (msg, estGagne) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'margin-top', '14px'),
+					A2($elm$html$Html$Attributes$style, 'padding', '12px'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'background',
+					estGagne ? 'rgba(90, 200, 120, 0.25)' : 'rgba(255, 60, 60, 0.25)')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(msg)
+				]));
+	});
+var $author$project$View$separateur = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'height', '1px'),
+			A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.15)'),
+			A2($elm$html$Html$Attributes$style, 'margin', '16px 0')
+		]),
+	_List_Nil);
+var $author$project$View$titre = function (t) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
+				A2($elm$html$Html$Attributes$style, 'margin-top', '6px')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(t)
+			]));
+};
+var $author$project$Types$NouveauMot = {$: 'NouveauMot'};
 var $author$project$Types$SaisieChangee = function (a) {
 	return {$: 'SaisieChangee', a: a};
 };
 var $author$project$Types$Verifier = {$: 'Verifier'};
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$input = _VirtualDom_node('input');
-var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6648,6 +6780,26 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $author$project$View$bouton = F3(
+	function (label, action, couleur) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(action),
+					A2($elm$html$Html$Attributes$style, 'background', couleur),
+					A2($elm$html$Html$Attributes$style, 'color', 'white'),
+					A2($elm$html$Html$Attributes$style, 'border', 'none'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '10px'),
+					A2($elm$html$Html$Attributes$style, 'padding', '10px 14px'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	});
+var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -6688,95 +6840,108 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Main$vueJeu = function (model) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$ul,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (d) {
-						return A2(
-							$elm$html$Html$li,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text(d.texte)
-								]));
-					},
-					model.definitions)),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$input,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$value(model.saisie),
-								$elm$html$Html$Attributes$placeholder('Ta réponse'),
-								$elm$html$Html$Events$onInput($author$project$Types$SaisieChangee)
-							]),
-						_List_Nil),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Types$Verifier)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Vérifier')
-							]))
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(model.message)
-					]))
-			]));
-};
-var $author$project$Main$vueSelonEtat = function (model) {
+var $author$project$View$zoneReponse = F2(
+	function (model, peutRepondre) {
+		return peutRepondre ? A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'gap', '10px'),
+					A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$input,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$value(model.saisie),
+							$elm$html$Html$Attributes$placeholder('Tape le mot ici'),
+							$elm$html$Html$Events$onInput($author$project$Types$SaisieChangee),
+							A2($elm$html$Html$Attributes$style, 'flex', '1'),
+							A2($elm$html$Html$Attributes$style, 'padding', '10px'),
+							A2($elm$html$Html$Attributes$style, 'border-radius', '10px')
+						]),
+					_List_Nil),
+					A3($author$project$View$bouton, 'Vérifier', $author$project$Types$Verifier, '#5b7cfa'),
+					A3($author$project$View$bouton, 'Changer le mot', $author$project$Types$NouveauMot, '#444')
+				])) : A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+				]),
+			_List_fromArray(
+				[
+					A3($author$project$View$bouton, 'Autre mot', $author$project$Types$NouveauMot, '#5b7cfa')
+				]));
+	});
+var $author$project$View$vueJeu = F2(
+	function (model, peutRepondre) {
+		return A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$author$project$View$titre('Définitions'),
+					$author$project$View$listeDefinitions(model.definitions),
+					$author$project$View$separateur,
+					$author$project$View$titre('Ta réponse'),
+					A2($author$project$View$zoneReponse, model, peutRepondre),
+					(model.message !== '') ? A2(
+					$author$project$View$messageBox,
+					model.message,
+					_Utils_eq(model.etat, $author$project$Types$Gagne)) : A2($elm$html$Html$div, _List_Nil, _List_Nil)
+				]));
+	});
+var $author$project$View$vueSelonEtat = function (model) {
 	var _v0 = model.etat;
 	switch (_v0.$) {
 		case 'ChargementMots':
-			return $elm$html$Html$text('Chargement des mots...');
+			return $author$project$View$texteSimple('Chargement des mots...');
 		case 'ChoixMot':
-			return $elm$html$Html$text('Choix du mot...');
+			return $author$project$View$texteSimple('Choix du mot...');
 		case 'ChargementDefinitions':
-			return $elm$html$Html$text('Chargement des définitions...');
+			return $author$project$View$texteSimple('Chargement des définitions...');
 		case 'Pret':
-			return $author$project$Main$vueJeu(model);
+			return A2($author$project$View$vueJeu, model, true);
 		case 'Gagne':
-			return $elm$html$Html$text(model.message);
+			return A2($author$project$View$vueJeu, model, false);
+		case 'Perdu':
+			return A2($author$project$View$vueJeu, model, false);
 		default:
-			var msgErr = _v0.a;
-			return $elm$html$Html$text('Erreur : ' + msgErr);
+			var msg = _v0.a;
+			return $author$project$View$texteSimple('Erreur : ' + msg);
 	}
 };
-var $author$project$Main$view = function (model) {
+var $author$project$View$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'min-height', '100vh'),
+				A2($elm$html$Html$Attributes$style, 'background', '#0b1020'),
+				A2($elm$html$Html$Attributes$style, 'color', '#e8ecff'),
+				A2($elm$html$Html$Attributes$style, 'font-family', 'system-ui, -apple-system, Segoe UI, Roboto, Arial'),
+				A2($elm$html$Html$Attributes$style, 'padding', '32px')
+			]),
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$h1,
-				_List_Nil,
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('GuessIt – version simple')
-					])),
-				$author$project$Main$vueSelonEtat(model)
+						A2($elm$html$Html$Attributes$style, 'max-width', '860px'),
+						A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
+					]),
+				_List_fromArray(
+					[
+						$author$project$View$entete,
+						$author$project$View$carte(
+						$author$project$View$vueSelonEtat(model))
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
@@ -6786,7 +6951,7 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 			return $elm$core$Platform$Sub$none;
 		},
 		update: $author$project$Main$update,
-		view: $author$project$Main$view
+		view: $author$project$View$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
