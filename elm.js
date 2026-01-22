@@ -6253,18 +6253,25 @@ var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$decoderDefinition = A2(
-	$elm$json$Json$Decode$map,
-	function (txt) {
-		return {texte: txt};
-	},
-	A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string));
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Main$decoderMeaning = A2(
-	$elm$json$Json$Decode$field,
-	'definitions',
-	$elm$json$Json$Decode$list($author$project$Main$decoderDefinition));
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Main$decoderMeaning = A3(
+	$elm$json$Json$Decode$map2,
+	F2(
+		function (pos, defs) {
+			return A2(
+				$elm$core$List$map,
+				function (d) {
+					return {texte: d, typeMot: pos};
+				},
+				defs);
+		}),
+	A2($elm$json$Json$Decode$field, 'partOfSpeech', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'definitions',
+		$elm$json$Json$Decode$list(
+			A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string))));
 var $author$project$Main$decoderEntree = A2(
 	$elm$json$Json$Decode$map,
 	$elm$core$List$concat,
@@ -6695,26 +6702,112 @@ var $author$project$View$texteSimple = function (t) {
 };
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$View$unique = function (xs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (x, acc) {
+				return A2($elm$core$List$member, x, acc) ? acc : _Utils_ap(
+					acc,
+					_List_fromArray(
+						[x]));
+			}),
+		_List_Nil,
+		xs);
+};
 var $author$project$View$listeDefinitions = function (defs) {
-	return A2(
-		$elm$html$Html$ul,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'line-height', '1.55'),
-				A2($elm$html$Html$Attributes$style, 'padding-left', '18px')
-			]),
+	var typesUniques = $author$project$View$unique(
 		A2(
 			$elm$core$List$map,
-			function (d) {
-				return A2(
-					$elm$html$Html$li,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(d.texte)
-						]));
+			function ($) {
+				return $.typeMot;
 			},
 			defs));
+	var defsPour = function (t) {
+		return A2(
+			$elm$core$List$filter,
+			function (d) {
+				return _Utils_eq(d.typeMot, t);
+			},
+			defs);
+	};
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		A2(
+			$elm$core$List$map,
+			function (t) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'font-weight', '700'),
+									A2($elm$html$Html$Attributes$style, 'opacity', '0.9')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(t)
+								])),
+							A2(
+							$elm$html$Html$ul,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'line-height', '1.55'),
+									A2($elm$html$Html$Attributes$style, 'padding-left', '18px')
+								]),
+							A2(
+								$elm$core$List$map,
+								function (d) {
+									return A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(d.texte)
+											]));
+								},
+								defsPour(t)))
+						]));
+			},
+			typesUniques));
 };
 var $author$project$View$messageBox = F2(
 	function (msg, estGagne) {
@@ -6900,7 +6993,7 @@ var $author$project$View$vueSelonEtat = function (model) {
 	var _v0 = model.etat;
 	switch (_v0.$) {
 		case 'ChargementMots':
-			return $author$project$View$texteSimple('Chargement des mots....');
+			return $author$project$View$texteSimple('Chargement des mots...');
 		case 'ChoixMot':
 			return $author$project$View$texteSimple('Choix du mot...');
 		case 'ChargementDefinitions':
