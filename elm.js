@@ -7227,7 +7227,7 @@ var $author$project$View$boutonHome = A2(
 		]),
 	_List_fromArray(
 		[
-			$elm$html$Html$text('Home')
+			$elm$html$Html$text('Menu')
 		]));
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
