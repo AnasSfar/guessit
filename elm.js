@@ -7257,7 +7257,7 @@ var $author$project$View$entete = A2(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('Bienvenue, lchoisis un niveau de difficulté et le mode de jeu.')
+					$elm$html$Html$text('Bienvenue, choisis un niveau de difficulté et le mode de jeu.')
 				]))
 		]));
 var $author$project$View$barreHaut = function (model) {
