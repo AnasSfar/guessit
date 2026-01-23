@@ -7257,7 +7257,7 @@ var $author$project$View$entete = A2(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('Bienvenue, le but du jeu est de deviner le mot secret grâce à des définitions.'),
+					$elm$html$Html$text('Bienvenue, le but du jeu est de deviner le mot secret grâce à des définitions. \n\ '),
 					$elm$html$Html$text('Choisis un niveau de difficulté (Beginner, Medium, Expert) et le mode de jeu (Classique, Express).')
 				]))
 		]));
