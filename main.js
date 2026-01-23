@@ -80,190 +80,6 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
 console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.');
 
 
-// EQUALITY
-
-function _Utils_eq(x, y)
-{
-	for (
-		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
-		isEqual && (pair = stack.pop());
-		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
-		)
-	{}
-
-	return isEqual;
-}
-
-function _Utils_eqHelp(x, y, depth, stack)
-{
-	if (x === y)
-	{
-		return true;
-	}
-
-	if (typeof x !== 'object' || x === null || y === null)
-	{
-		typeof x === 'function' && _Debug_crash(5);
-		return false;
-	}
-
-	if (depth > 100)
-	{
-		stack.push(_Utils_Tuple2(x,y));
-		return true;
-	}
-
-	/**/
-	if (x.$ === 'Set_elm_builtin')
-	{
-		x = $elm$core$Set$toList(x);
-		y = $elm$core$Set$toList(y);
-	}
-	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	/**_UNUSED/
-	if (x.$ < 0)
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	for (var key in x)
-	{
-		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-var _Utils_equal = F2(_Utils_eq);
-var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
-
-
-
-// COMPARISONS
-
-// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
-// the particular integer values assigned to LT, EQ, and GT.
-
-function _Utils_cmp(x, y, ord)
-{
-	if (typeof x !== 'object')
-	{
-		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
-	}
-
-	/**/
-	if (x instanceof String)
-	{
-		var a = x.valueOf();
-		var b = y.valueOf();
-		return a === b ? 0 : a < b ? -1 : 1;
-	}
-	//*/
-
-	/**_UNUSED/
-	if (typeof x.$ === 'undefined')
-	//*/
-	/**/
-	if (x.$[0] === '#')
-	//*/
-	{
-		return (ord = _Utils_cmp(x.a, y.a))
-			? ord
-			: (ord = _Utils_cmp(x.b, y.b))
-				? ord
-				: _Utils_cmp(x.c, y.c);
-	}
-
-	// traverse conses until end of a list or a mismatch
-	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
-	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
-}
-
-var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
-var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
-var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
-var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
-
-var _Utils_compare = F2(function(x, y)
-{
-	var n = _Utils_cmp(x, y);
-	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
-});
-
-
-// COMMON VALUES
-
-var _Utils_Tuple0_UNUSED = 0;
-var _Utils_Tuple0 = { $: '#0' };
-
-function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
-
-function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
-
-function _Utils_chr_UNUSED(c) { return c; }
-function _Utils_chr(c) { return new String(c); }
-
-
-// RECORDS
-
-function _Utils_update(oldRecord, updatedFields)
-{
-	var newRecord = {};
-
-	for (var key in oldRecord)
-	{
-		newRecord[key] = oldRecord[key];
-	}
-
-	for (var key in updatedFields)
-	{
-		newRecord[key] = updatedFields[key];
-	}
-
-	return newRecord;
-}
-
-
-// APPEND
-
-var _Utils_append = F2(_Utils_ap);
-
-function _Utils_ap(xs, ys)
-{
-	// append Strings
-	if (typeof xs === 'string')
-	{
-		return xs + ys;
-	}
-
-	// append Lists
-	if (!xs.b)
-	{
-		return ys;
-	}
-	var root = _List_Cons(xs.a, ys);
-	xs = xs.b
-	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		curr = curr.b = _List_Cons(xs.a, ys);
-	}
-	return root;
-}
-
-
-
 var _List_Nil_UNUSED = { $: 0 };
 var _List_Nil = { $: '[]' };
 
@@ -789,6 +605,190 @@ function _Debug_regionToString(region)
 		return 'on line ' + region.start.line;
 	}
 	return 'on lines ' + region.start.line + ' through ' + region.end.line;
+}
+
+
+
+// EQUALITY
+
+function _Utils_eq(x, y)
+{
+	for (
+		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
+		isEqual && (pair = stack.pop());
+		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
+		)
+	{}
+
+	return isEqual;
+}
+
+function _Utils_eqHelp(x, y, depth, stack)
+{
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (typeof x !== 'object' || x === null || y === null)
+	{
+		typeof x === 'function' && _Debug_crash(5);
+		return false;
+	}
+
+	if (depth > 100)
+	{
+		stack.push(_Utils_Tuple2(x,y));
+		return true;
+	}
+
+	/**/
+	if (x.$ === 'Set_elm_builtin')
+	{
+		x = $elm$core$Set$toList(x);
+		y = $elm$core$Set$toList(y);
+	}
+	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	/**_UNUSED/
+	if (x.$ < 0)
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	for (var key in x)
+	{
+		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+var _Utils_equal = F2(_Utils_eq);
+var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
+
+
+
+// COMPARISONS
+
+// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
+// the particular integer values assigned to LT, EQ, and GT.
+
+function _Utils_cmp(x, y, ord)
+{
+	if (typeof x !== 'object')
+	{
+		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
+	}
+
+	/**/
+	if (x instanceof String)
+	{
+		var a = x.valueOf();
+		var b = y.valueOf();
+		return a === b ? 0 : a < b ? -1 : 1;
+	}
+	//*/
+
+	/**_UNUSED/
+	if (typeof x.$ === 'undefined')
+	//*/
+	/**/
+	if (x.$[0] === '#')
+	//*/
+	{
+		return (ord = _Utils_cmp(x.a, y.a))
+			? ord
+			: (ord = _Utils_cmp(x.b, y.b))
+				? ord
+				: _Utils_cmp(x.c, y.c);
+	}
+
+	// traverse conses until end of a list or a mismatch
+	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
+	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
+}
+
+var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
+var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
+var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
+var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
+
+var _Utils_compare = F2(function(x, y)
+{
+	var n = _Utils_cmp(x, y);
+	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
+});
+
+
+// COMMON VALUES
+
+var _Utils_Tuple0_UNUSED = 0;
+var _Utils_Tuple0 = { $: '#0' };
+
+function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
+
+function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
+
+function _Utils_chr_UNUSED(c) { return c; }
+function _Utils_chr(c) { return new String(c); }
+
+
+// RECORDS
+
+function _Utils_update(oldRecord, updatedFields)
+{
+	var newRecord = {};
+
+	for (var key in oldRecord)
+	{
+		newRecord[key] = oldRecord[key];
+	}
+
+	for (var key in updatedFields)
+	{
+		newRecord[key] = updatedFields[key];
+	}
+
+	return newRecord;
+}
+
+
+// APPEND
+
+var _Utils_append = F2(_Utils_ap);
+
+function _Utils_ap(xs, ys)
+{
+	// append Strings
+	if (typeof xs === 'string')
+	{
+		return xs + ys;
+	}
+
+	// append Lists
+	if (!xs.b)
+	{
+		return ys;
+	}
+	var root = _List_Cons(xs.a, ys);
+	xs = xs.b
+	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		curr = curr.b = _List_Cons(xs.a, ys);
+	}
+	return root;
 }
 
 
@@ -4381,6 +4381,52 @@ function _Browser_load(url)
 
 
 
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
+
+
+
 // SEND REQUEST
 
 var _Http_toTask = F3(function(router, toTask, request)
@@ -4590,56 +4636,33 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
-
-
-
-function _Time_now(millisToPosix)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(millisToPosix(Date.now())));
-	});
-}
-
-var _Time_setInterval = F2(function(interval, task)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
-		return function() { clearInterval(id); };
-	});
-});
-
-function _Time_here()
-{
-	return _Scheduler_binding(function(callback)
-	{
-		callback(_Scheduler_succeed(
-			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
-		));
-	});
-}
-
-
-function _Time_getZoneName()
-{
-	return _Scheduler_binding(function(callback)
-	{
-		try
-		{
-			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
-		}
-		catch (e)
-		{
-			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
-		}
-		callback(_Scheduler_succeed(name));
-	});
-}
 var $elm$core$Basics$EQ = {$: 'EQ'};
-var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
 var $elm$core$List$cons = _List_cons;
+var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
+var $elm$core$Array$foldr = F3(
+	function (func, baseCase, _v0) {
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = F2(
+			function (node, acc) {
+				if (node.$ === 'SubTree') {
+					var subTree = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+				} else {
+					var values = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
+				}
+			});
+		return A3(
+			$elm$core$Elm$JsArray$foldr,
+			helper,
+			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
+			tree);
+	});
+var $elm$core$Array$toList = function (array) {
+	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
+};
 var $elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
 		foldr:
@@ -4692,30 +4715,7 @@ var $elm$core$Set$toList = function (_v0) {
 	var dict = _v0.a;
 	return $elm$core$Dict$keys(dict);
 };
-var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
-var $elm$core$Array$foldr = F3(
-	function (func, baseCase, _v0) {
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = F2(
-			function (node, acc) {
-				if (node.$ === 'SubTree') {
-					var subTree = node.a;
-					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
-				} else {
-					var values = node.a;
-					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
-				}
-			});
-		return A3(
-			$elm$core$Elm$JsArray$foldr,
-			helper,
-			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
-			tree);
-	});
-var $elm$core$Array$toList = function (array) {
-	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
-};
+var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -5425,41 +5425,23 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Types$Echec = function (a) {
-	return {$: 'Echec', a: a};
-};
-var $author$project$Types$MotsCharges = function (a) {
-	return {$: 'MotsCharges', a: a};
-};
-var $elm$http$Http$BadStatus_ = F2(
+var $author$project$Types$Accueil = {$: 'Accueil'};
+var $author$project$Types$modeleInitial = {definitionsVisibles: _List_Nil, difficulte: $elm$core$Maybe$Nothing, etat: $author$project$Types$Accueil, message: '', mode: $elm$core$Maybe$Nothing, motSecret: '', mots: _List_Nil, saisie: '', score: 0, tempsExpress: 60, tempsRestant: 0};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Types$Tick = {$: 'Tick'};
+var $elm$time$Time$Every = F2(
 	function (a, b) {
-		return {$: 'BadStatus_', a: a, b: b};
+		return {$: 'Every', a: a, b: b};
 	});
-var $elm$http$Http$BadUrl_ = function (a) {
-	return {$: 'BadUrl_', a: a};
-};
-var $elm$http$Http$GoodStatus_ = F2(
-	function (a, b) {
-		return {$: 'GoodStatus_', a: a, b: b};
+var $elm$time$Time$State = F2(
+	function (taggers, processes) {
+		return {processes: processes, taggers: taggers};
 	});
-var $elm$http$Http$NetworkError_ = {$: 'NetworkError_'};
-var $elm$http$Http$Receiving = function (a) {
-	return {$: 'Receiving', a: a};
-};
-var $elm$http$Http$Sending = function (a) {
-	return {$: 'Sending', a: a};
-};
-var $elm$http$Http$Timeout_ = {$: 'Timeout_'};
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$Maybe$isJust = function (maybe) {
-	if (maybe.$ === 'Just') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$time$Time$init = $elm$core$Task$succeed(
+	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5600,6 +5582,406 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $elm$time$Time$addMySub = F2(
+	function (_v0, state) {
+		var interval = _v0.a;
+		var tagger = _v0.b;
+		var _v1 = A2($elm$core$Dict$get, interval, state);
+		if (_v1.$ === 'Nothing') {
+			return A3(
+				$elm$core$Dict$insert,
+				interval,
+				_List_fromArray(
+					[tagger]),
+				state);
+		} else {
+			var taggers = _v1.a;
+			return A3(
+				$elm$core$Dict$insert,
+				interval,
+				A2($elm$core$List$cons, tagger, taggers),
+				state);
+		}
+	});
+var $elm$core$Process$kill = _Scheduler_kill;
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _v0) {
+				stepState:
+				while (true) {
+					var list = _v0.a;
+					var result = _v0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _v2 = list.a;
+						var lKey = _v2.a;
+						var lValue = _v2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_v0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_v0 = $temp$_v0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _v3 = A3(
+			$elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				$elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _v3.a;
+		var intermediateResult = _v3.b;
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v4, result) {
+					var k = _v4.a;
+					var v = _v4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$setInterval = _Time_setInterval;
+var $elm$core$Process$spawn = _Scheduler_spawn;
+var $elm$time$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		if (!intervals.b) {
+			return $elm$core$Task$succeed(processes);
+		} else {
+			var interval = intervals.a;
+			var rest = intervals.b;
+			var spawnTimer = $elm$core$Process$spawn(
+				A2(
+					$elm$time$Time$setInterval,
+					interval,
+					A2($elm$core$Platform$sendToSelf, router, interval)));
+			var spawnRest = function (id) {
+				return A3(
+					$elm$time$Time$spawnHelp,
+					router,
+					rest,
+					A3($elm$core$Dict$insert, interval, id, processes));
+			};
+			return A2($elm$core$Task$andThen, spawnRest, spawnTimer);
+		}
+	});
+var $elm$time$Time$onEffects = F3(
+	function (router, subs, _v0) {
+		var processes = _v0.processes;
+		var rightStep = F3(
+			function (_v6, id, _v7) {
+				var spawns = _v7.a;
+				var existing = _v7.b;
+				var kills = _v7.c;
+				return _Utils_Tuple3(
+					spawns,
+					existing,
+					A2(
+						$elm$core$Task$andThen,
+						function (_v5) {
+							return kills;
+						},
+						$elm$core$Process$kill(id)));
+			});
+		var newTaggers = A3($elm$core$List$foldl, $elm$time$Time$addMySub, $elm$core$Dict$empty, subs);
+		var leftStep = F3(
+			function (interval, taggers, _v4) {
+				var spawns = _v4.a;
+				var existing = _v4.b;
+				var kills = _v4.c;
+				return _Utils_Tuple3(
+					A2($elm$core$List$cons, interval, spawns),
+					existing,
+					kills);
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _v3) {
+				var spawns = _v3.a;
+				var existing = _v3.b;
+				var kills = _v3.c;
+				return _Utils_Tuple3(
+					spawns,
+					A3($elm$core$Dict$insert, interval, id, existing),
+					kills);
+			});
+		var _v1 = A6(
+			$elm$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			processes,
+			_Utils_Tuple3(
+				_List_Nil,
+				$elm$core$Dict$empty,
+				$elm$core$Task$succeed(_Utils_Tuple0)));
+		var spawnList = _v1.a;
+		var existingDict = _v1.b;
+		var killTask = _v1.c;
+		return A2(
+			$elm$core$Task$andThen,
+			function (newProcesses) {
+				return $elm$core$Task$succeed(
+					A2($elm$time$Time$State, newTaggers, newProcesses));
+			},
+			A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$time$Time$spawnHelp, router, spawnList, existingDict);
+				},
+				killTask));
+	});
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _v0 = A2($elm$core$Dict$get, interval, state.taggers);
+		if (_v0.$ === 'Nothing') {
+			return $elm$core$Task$succeed(state);
+		} else {
+			var taggers = _v0.a;
+			var tellTaggers = function (time) {
+				return $elm$core$Task$sequence(
+					A2(
+						$elm$core$List$map,
+						function (tagger) {
+							return A2(
+								$elm$core$Platform$sendToApp,
+								router,
+								tagger(time));
+						},
+						taggers));
+			};
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					return $elm$core$Task$succeed(state);
+				},
+				A2($elm$core$Task$andThen, tellTaggers, $elm$time$Time$now));
+		}
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$time$Time$subMap = F2(
+	function (f, _v0) {
+		var interval = _v0.a;
+		var tagger = _v0.b;
+		return A2(
+			$elm$time$Time$Every,
+			interval,
+			A2($elm$core$Basics$composeL, f, tagger));
+	});
+_Platform_effectManagers['Time'] = _Platform_createManager($elm$time$Time$init, $elm$time$Time$onEffects, $elm$time$Time$onSelfMsg, 0, $elm$time$Time$subMap);
+var $elm$time$Time$subscription = _Platform_leaf('Time');
+var $elm$time$Time$every = F2(
+	function (interval, tagger) {
+		return $elm$time$Time$subscription(
+			A2($elm$time$Time$Every, interval, tagger));
+	});
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Main$subscriptions = function (model) {
+	var _v0 = _Utils_Tuple2(model.mode, model.etat);
+	_v0$4:
+	while (true) {
+		if ((_v0.a.$ === 'Just') && (_v0.a.a.$ === 'Express')) {
+			switch (_v0.b.$) {
+				case 'Pret':
+					var _v1 = _v0.a.a;
+					var _v2 = _v0.b;
+					return A2(
+						$elm$time$Time$every,
+						1000,
+						function (_v3) {
+							return $author$project$Types$Tick;
+						});
+				case 'ChargementMots':
+					var _v4 = _v0.a.a;
+					var _v5 = _v0.b;
+					return A2(
+						$elm$time$Time$every,
+						1000,
+						function (_v6) {
+							return $author$project$Types$Tick;
+						});
+				case 'ChoixMot':
+					var _v7 = _v0.a.a;
+					var _v8 = _v0.b;
+					return A2(
+						$elm$time$Time$every,
+						1000,
+						function (_v9) {
+							return $author$project$Types$Tick;
+						});
+				case 'ChargementDefinitions':
+					var _v10 = _v0.a.a;
+					var _v11 = _v0.b;
+					return A2(
+						$elm$time$Time$every,
+						1000,
+						function (_v12) {
+							return $author$project$Types$Tick;
+						});
+				default:
+					break _v0$4;
+			}
+		} else {
+			break _v0$4;
+		}
+	}
+	return $elm$core$Platform$Sub$none;
+};
+var $author$project$Types$Beginner = {$: 'Beginner'};
+var $author$project$Types$ChargementDefinitions = {$: 'ChargementDefinitions'};
+var $author$project$Types$ChoixMot = {$: 'ChoixMot'};
+var $author$project$Types$Erreur = function (a) {
+	return {$: 'Erreur', a: a};
+};
+var $author$project$Types$Gagne = {$: 'Gagne'};
+var $author$project$Types$Pret = {$: 'Pret'};
+var $author$project$Types$TempsEcoule = {$: 'TempsEcoule'};
+var $author$project$Types$DefinitionsChargees = function (a) {
+	return {$: 'DefinitionsChargees', a: a};
+};
+var $author$project$Types$Echec = function (a) {
+	return {$: 'Echec', a: a};
+};
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Main$decoderMeaning = A3(
+	$elm$json$Json$Decode$map2,
+	F2(
+		function (pos, defs) {
+			return A2(
+				$elm$core$List$map,
+				function (d) {
+					return {texte: d, typeMot: pos};
+				},
+				defs);
+		}),
+	A2($elm$json$Json$Decode$field, 'partOfSpeech', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'definitions',
+		$elm$json$Json$Decode$list(
+			A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string))));
+var $author$project$Main$decoderEntree = A2(
+	$elm$json$Json$Decode$map,
+	$elm$core$List$concat,
+	A2(
+		$elm$json$Json$Decode$field,
+		'meanings',
+		$elm$json$Json$Decode$list($author$project$Main$decoderMeaning)));
+var $author$project$Main$decoderDefinitions = A2(
+	$elm$json$Json$Decode$map,
+	$elm$core$List$concat,
+	$elm$json$Json$Decode$list($author$project$Main$decoderEntree));
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $elm$http$Http$BadStatus_ = F2(
+	function (a, b) {
+		return {$: 'BadStatus_', a: a, b: b};
+	});
+var $elm$http$Http$BadUrl_ = function (a) {
+	return {$: 'BadUrl_', a: a};
+};
+var $elm$http$Http$GoodStatus_ = F2(
+	function (a, b) {
+		return {$: 'GoodStatus_', a: a, b: b};
+	});
+var $elm$http$Http$NetworkError_ = {$: 'NetworkError_'};
+var $elm$http$Http$Receiving = function (a) {
+	return {$: 'Receiving', a: a};
+};
+var $elm$http$Http$Sending = function (a) {
+	return {$: 'Sending', a: a};
+};
+var $elm$http$Http$Timeout_ = {$: 'Timeout_'};
+var $elm$core$Maybe$isJust = function (maybe) {
+	if (maybe.$ === 'Just') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -5986,17 +6368,6 @@ var $elm$http$Http$expectStringResponse = F2(
 			$elm$core$Basics$identity,
 			A2($elm$core$Basics$composeR, toResult, toMsg));
 	});
-var $elm$http$Http$BadBody = function (a) {
-	return {$: 'BadBody', a: a};
-};
-var $elm$http$Http$BadStatus = function (a) {
-	return {$: 'BadStatus', a: a};
-};
-var $elm$http$Http$BadUrl = function (a) {
-	return {$: 'BadUrl', a: a};
-};
-var $elm$http$Http$NetworkError = {$: 'NetworkError'};
-var $elm$http$Http$Timeout = {$: 'Timeout'};
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
 		if (result.$ === 'Ok') {
@@ -6008,6 +6379,17 @@ var $elm$core$Result$mapError = F2(
 				f(e));
 		}
 	});
+var $elm$http$Http$BadBody = function (a) {
+	return {$: 'BadBody', a: a};
+};
+var $elm$http$Http$BadStatus = function (a) {
+	return {$: 'BadStatus', a: a};
+};
+var $elm$http$Http$BadUrl = function (a) {
+	return {$: 'BadUrl', a: a};
+};
+var $elm$http$Http$NetworkError = {$: 'NetworkError'};
+var $elm$http$Http$Timeout = {$: 'Timeout'};
 var $elm$http$Http$resolve = F2(
 	function (toResult, response) {
 		switch (response.$) {
@@ -6031,12 +6413,19 @@ var $elm$http$Http$resolve = F2(
 					toResult(body));
 		}
 	});
-var $elm$http$Http$expectString = function (toMsg) {
-	return A2(
-		$elm$http$Http$expectStringResponse,
-		toMsg,
-		$elm$http$Http$resolve($elm$core$Result$Ok));
-};
+var $elm$http$Http$expectJson = F2(
+	function (toMsg, decoder) {
+		return A2(
+			$elm$http$Http$expectStringResponse,
+			toMsg,
+			$elm$http$Http$resolve(
+				function (string) {
+					return A2(
+						$elm$core$Result$mapError,
+						$elm$json$Json$Decode$errorToString,
+						A2($elm$json$Json$Decode$decodeString, decoder, string));
+				}));
+	});
 var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
@@ -6047,8 +6436,6 @@ var $elm$http$Http$State = F2(
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
-var $elm$core$Process$kill = _Scheduler_kill;
-var $elm$core$Process$spawn = _Scheduler_spawn;
 var $elm$http$Http$updateReqs = F3(
 	function (router, cmds, reqs) {
 		updateReqs:
@@ -6210,101 +6597,14 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Words$chargerMots = $elm$http$Http$get(
-	{
-		expect: $elm$http$Http$expectString(
-			function (result) {
-				if (result.$ === 'Ok') {
-					var contenu = result.a;
-					return $author$project$Types$MotsCharges(contenu);
-				} else {
-					return $author$project$Types$Echec('Impossible de charger Words.txt');
-				}
-			}),
-		url: 'data/Words.txt'
-	});
-var $author$project$Types$ChargementMots = {$: 'ChargementMots'};
-var $author$project$Types$modeleInitial = {definitions: _List_Nil, etat: $author$project$Types$ChargementMots, message: '', motSecret: '', mots: _List_Nil, saisie: ''};
-var $author$project$Main$init = function (_v0) {
-	return _Utils_Tuple2($author$project$Types$modeleInitial, $author$project$Words$chargerMots);
-};
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Types$ChargementDefinitions = {$: 'ChargementDefinitions'};
-var $author$project$Types$ChoixMot = {$: 'ChoixMot'};
-var $author$project$Types$Erreur = function (a) {
-	return {$: 'Erreur', a: a};
-};
-var $author$project$Types$Gagne = {$: 'Gagne'};
-var $author$project$Types$Perdu = {$: 'Perdu'};
-var $author$project$Types$Pret = {$: 'Pret'};
-var $author$project$Types$DefinitionsChargees = function (a) {
-	return {$: 'DefinitionsChargees', a: a};
-};
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$decoderMeaning = A3(
-	$elm$json$Json$Decode$map2,
-	F2(
-		function (pos, defs) {
-			return A2(
-				$elm$core$List$map,
-				function (d) {
-					return {texte: d, typeMot: pos};
-				},
-				defs);
-		}),
-	A2($elm$json$Json$Decode$field, 'partOfSpeech', $elm$json$Json$Decode$string),
-	A2(
-		$elm$json$Json$Decode$field,
-		'definitions',
-		$elm$json$Json$Decode$list(
-			A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string))));
-var $author$project$Main$decoderEntree = A2(
-	$elm$json$Json$Decode$map,
-	$elm$core$List$concat,
-	A2(
-		$elm$json$Json$Decode$field,
-		'meanings',
-		$elm$json$Json$Decode$list($author$project$Main$decoderMeaning)));
-var $author$project$Main$decoderDefinitions = A2(
-	$elm$json$Json$Decode$map,
-	$elm$core$List$concat,
-	$elm$json$Json$Decode$list($author$project$Main$decoderEntree));
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $elm$http$Http$expectJson = F2(
-	function (toMsg, decoder) {
-		return A2(
-			$elm$http$Http$expectStringResponse,
-			toMsg,
-			$elm$http$Http$resolve(
-				function (string) {
-					return A2(
-						$elm$core$Result$mapError,
-						$elm$json$Json$Decode$errorToString,
-						A2($elm$json$Json$Decode$decodeString, decoder, string));
-				}));
-	});
 var $author$project$Main$chargerDefinitions = function (mot) {
 	return $elm$http$Http$get(
 		{
 			expect: A2(
 				$elm$http$Http$expectJson,
-				function (result) {
-					if (result.$ === 'Ok') {
-						var defs = result.a;
+				function (res) {
+					if (res.$ === 'Ok') {
+						var defs = res.a;
 						return $author$project$Types$DefinitionsChargees(defs);
 					} else {
 						return $author$project$Types$Echec('Impossible de récupérer les définitions.');
@@ -6316,6 +6616,15 @@ var $author$project$Main$chargerDefinitions = function (mot) {
 };
 var $author$project$Types$MotChoisi = function (a) {
 	return {$: 'MotChoisi', a: a};
+};
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
 };
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
@@ -6339,22 +6648,6 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
-var $elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var $elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var $elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var $elm$time$Time$customZone = $elm$time$Time$Zone;
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$posixToMillis = function (_v0) {
 	var millis = _v0.a;
 	return millis;
@@ -6394,9 +6687,6 @@ var $elm$random$Random$onSelfMsg = F3(
 	function (_v0, _v1, seed) {
 		return $elm$core$Task$succeed(seed);
 	});
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
 var $elm$random$Random$map = F2(
 	function (func, _v0) {
 		var genA = _v0.a;
@@ -6424,12 +6714,6 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
-var $elm$random$Random$constant = function (value) {
-	return $elm$random$Random$Generator(
-		function (seed) {
-			return _Utils_Tuple2(value, seed);
-		});
-};
 var $elm$random$Random$addOne = function (value) {
 	return _Utils_Tuple2(1, value);
 };
@@ -6513,21 +6797,158 @@ var $elm$random$Random$uniform = F2(
 			$elm$random$Random$addOne(value),
 			A2($elm$core$List$map, $elm$random$Random$addOne, valueList));
 	});
-var $author$project$Words$generateurMot = function (liste) {
-	if (!liste.b) {
-		return $elm$random$Random$constant('time');
+var $author$project$Words$choisirMot = function (mots) {
+	if (!mots.b) {
+		return A2(
+			$elm$random$Random$generate,
+			$author$project$Types$MotChoisi,
+			$elm$random$Random$constant(''));
 	} else {
-		var x = liste.a;
-		var xs = liste.b;
-		return A2($elm$random$Random$uniform, x, xs);
+		var x = mots.a;
+		var xs = mots.b;
+		return A2(
+			$elm$random$Random$generate,
+			$author$project$Types$MotChoisi,
+			A2($elm$random$Random$uniform, x, xs));
 	}
 };
-var $author$project$Words$choisirMot = function (liste) {
-	return A2(
-		$elm$random$Random$generate,
-		$author$project$Types$MotChoisi,
-		$author$project$Words$generateurMot(liste));
-};
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$Main$defsSelonDifficulte = F2(
+	function (dif, defs) {
+		switch (dif.$) {
+			case 'Beginner':
+				return defs;
+			case 'Medium':
+				return A2($elm$core$List$take, 2, defs);
+			default:
+				return A2($elm$core$List$take, 1, defs);
+		}
+	});
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
@@ -6535,9 +6956,46 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
+var $author$project$Types$ChargementMots = {$: 'ChargementMots'};
+var $author$project$Types$MotsCharges = function (a) {
+	return {$: 'MotsCharges', a: a};
+};
+var $elm$http$Http$expectString = function (toMsg) {
+	return A2(
+		$elm$http$Http$expectStringResponse,
+		toMsg,
+		$elm$http$Http$resolve($elm$core$Result$Ok));
+};
+var $author$project$Words$chargerMots = $elm$http$Http$get(
+	{
+		expect: $elm$http$Http$expectString(
+			function (result) {
+				if (result.$ === 'Ok') {
+					var contenu = result.a;
+					return $author$project$Types$MotsCharges(contenu);
+				} else {
+					return $author$project$Types$Echec('Impossible de charger Words.txt');
+				}
+			}),
+		url: 'data/Words.txt'
+	});
+var $author$project$Main$lancer = function (model) {
+	var tRest = function () {
+		var _v0 = model.mode;
+		if ((_v0.$ === 'Just') && (_v0.a.$ === 'Express')) {
+			var _v1 = _v0.a;
+			return model.tempsExpress;
+		} else {
+			return 0;
+		}
+	}();
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{definitionsVisibles: _List_Nil, etat: $author$project$Types$ChargementMots, message: '', motSecret: '', mots: _List_Nil, saisie: '', score: 0, tempsRestant: tRest}),
+		$author$project$Words$chargerMots);
+};
 var $elm$core$Basics$neq = _Utils_notEqual;
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$String$toLower = _String_toLower;
 var $elm$core$String$trim = _String_trim;
 var $author$project$Main$normaliser = function (s) {
@@ -6559,17 +7017,98 @@ var $elm$core$String$lines = _String_lines;
 var $author$project$Words$parserMots = function (contenu) {
 	return A2(
 		$elm$core$List$filter,
-		function (mot) {
-			return mot !== '';
+		function (l) {
+			return l !== '';
 		},
 		A2(
 			$elm$core$List$map,
 			$elm$core$String$trim,
 			$elm$core$String$lines(contenu)));
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'ChoisirDifficulte':
+				var d = msg.a;
+				var m2 = _Utils_update(
+					model,
+					{
+						difficulte: $elm$core$Maybe$Just(d),
+						message: ''
+					});
+				return (!_Utils_eq(m2.mode, $elm$core$Maybe$Nothing)) ? $author$project$Main$lancer(m2) : _Utils_Tuple2(m2, $elm$core$Platform$Cmd$none);
+			case 'ChoisirMode':
+				var m = msg.a;
+				var m2 = _Utils_update(
+					model,
+					{
+						message: '',
+						mode: $elm$core$Maybe$Just(m)
+					});
+				var m3 = function () {
+					if (m.$ === 'Express') {
+						return _Utils_update(
+							m2,
+							{tempsRestant: m2.tempsExpress});
+					} else {
+						return _Utils_update(
+							m2,
+							{tempsRestant: 0});
+					}
+				}();
+				return (!_Utils_eq(m3.difficulte, $elm$core$Maybe$Nothing)) ? $author$project$Main$lancer(m3) : _Utils_Tuple2(m3, $elm$core$Platform$Cmd$none);
+			case 'TempsExpressChange':
+				var v = msg.a;
+				var _v2 = $elm$core$String$toInt(v);
+				if (_v2.$ === 'Just') {
+					var t = _v2.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{tempsExpress: t, tempsRestant: t}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 'LancerJeu':
+				return _Utils_eq(model.difficulte, $elm$core$Maybe$Nothing) ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{message: 'Choisis une difficulté.'}),
+					$elm$core$Platform$Cmd$none) : (_Utils_eq(model.mode, $elm$core$Maybe$Nothing) ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{message: 'Choisis un mode.'}),
+					$elm$core$Platform$Cmd$none) : $author$project$Main$lancer(model));
+			case 'Home':
+				return _Utils_Tuple2($author$project$Types$modeleInitial, $elm$core$Platform$Cmd$none);
+			case 'Rejouer':
+				return _Utils_Tuple2($author$project$Types$modeleInitial, $elm$core$Platform$Cmd$none);
+			case 'Tick':
+				var _v3 = model.mode;
+				if ((_v3.$ === 'Just') && (_v3.a.$ === 'Express')) {
+					var _v4 = _v3.a;
+					return (model.tempsRestant <= 1) ? _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{etat: $author$project$Types$TempsEcoule, tempsRestant: 0}),
+						$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{tempsRestant: model.tempsRestant - 1}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'MotsCharges':
 				var contenu = msg.a;
 				var liste = $author$project$Words$parserMots(contenu);
@@ -6577,7 +7116,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							etat: $author$project$Types$Erreur('Le fichier Words.txt est vide.')
+							etat: $author$project$Types$Erreur('Words.txt vide.')
 						}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					_Utils_update(
@@ -6589,272 +7128,68 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{definitions: _List_Nil, etat: $author$project$Types$ChargementDefinitions, message: '', motSecret: mot, saisie: ''}),
+						{definitionsVisibles: _List_Nil, etat: $author$project$Types$ChargementDefinitions, message: '', motSecret: mot, saisie: ''}),
 					$author$project$Main$chargerDefinitions(mot));
 			case 'DefinitionsChargees':
 				var defs = msg.a;
+				var dif = A2($elm$core$Maybe$withDefault, $author$project$Types$Beginner, model.difficulte);
+				var visibles = A2($author$project$Main$defsSelonDifficulte, dif, defs);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{definitions: defs, etat: $author$project$Types$Pret}),
+						{definitionsVisibles: visibles, etat: $author$project$Types$Pret}),
 					$elm$core$Platform$Cmd$none);
 			case 'SaisieChangee':
-				var texte = msg.a;
+				var txt = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{saisie: texte}),
+						{saisie: txt}),
 					$elm$core$Platform$Cmd$none);
 			case 'Verifier':
-				return (!_Utils_eq(model.etat, $author$project$Types$Pret)) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : (_Utils_eq(
+				if (_Utils_eq(
 					$author$project$Main$normaliser(model.saisie),
-					$author$project$Main$normaliser(model.motSecret)) ? _Utils_Tuple2(
+					$author$project$Main$normaliser(model.motSecret))) {
+					var _v5 = model.mode;
+					if ((_v5.$ === 'Just') && (_v5.a.$ === 'Express')) {
+						var _v6 = _v5.a;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{etat: $author$project$Types$Gagne, message: 'Correct.', score: model.score + 1}),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{etat: $author$project$Types$Gagne, message: 'Bravo.'}),
+							$elm$core$Platform$Cmd$none);
+					}
+				} else {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{message: 'Faux, réessaie.'}),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'MotSuivant':
+				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{etat: $author$project$Types$Gagne, message: 'Bravo ! Tu as trouvé.'}),
-					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{etat: $author$project$Types$Perdu, message: 'Faux. La bonne réponse était : ' + model.motSecret}),
-					$elm$core$Platform$Cmd$none));
-			case 'NouveauMot':
-				return $elm$core$List$isEmpty(model.mots) ? _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							etat: $author$project$Types$Erreur('Liste de mots vide.')
-						}),
-					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{definitions: _List_Nil, etat: $author$project$Types$ChoixMot, message: '', motSecret: '', saisie: ''}),
+						{definitionsVisibles: _List_Nil, etat: $author$project$Types$ChoixMot, message: '', motSecret: '', saisie: ''}),
 					$author$project$Words$choisirMot(model.mots));
 			default:
-				var msgErr = msg.a;
+				var err = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							etat: $author$project$Types$Erreur(msgErr)
+							etat: $author$project$Types$Erreur(err)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$View$carte = function (contenu) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.06)'),
-				A2($elm$html$Html$Attributes$style, 'border-radius', '16px'),
-				A2($elm$html$Html$Attributes$style, 'padding', '18px')
-			]),
-		_List_fromArray(
-			[contenu]));
-};
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$View$entete = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'margin-bottom', '18px')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$h1,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'margin', '0'),
-					A2($elm$html$Html$Attributes$style, 'font-size', '32px')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('GuessIt')
-				])),
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'opacity', '0.85')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Lis les définitions et devine le mot.')
-				]))
-		]));
-var $author$project$View$texteSimple = function (t) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'opacity', '0.85')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(t)
-			]));
-};
-var $elm$html$Html$li = _VirtualDom_node('li');
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $author$project$View$unique = function (xs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (x, acc) {
-				return A2($elm$core$List$member, x, acc) ? acc : _Utils_ap(
-					acc,
-					_List_fromArray(
-						[x]));
-			}),
-		_List_Nil,
-		xs);
-};
-var $author$project$View$listeDefinitions = function (defs) {
-	var typesUniques = $author$project$View$unique(
-		A2(
-			$elm$core$List$map,
-			function ($) {
-				return $.typeMot;
-			},
-			defs));
-	var defsPour = function (t) {
-		return A2(
-			$elm$core$List$filter,
-			function (d) {
-				return _Utils_eq(d.typeMot, t);
-			},
-			defs);
-	};
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		A2(
-			$elm$core$List$map,
-			function (t) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									A2($elm$html$Html$Attributes$style, 'font-weight', '700'),
-									A2($elm$html$Html$Attributes$style, 'opacity', '0.9')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(t)
-								])),
-							A2(
-							$elm$html$Html$ul,
-							_List_fromArray(
-								[
-									A2($elm$html$Html$Attributes$style, 'line-height', '1.55'),
-									A2($elm$html$Html$Attributes$style, 'padding-left', '18px')
-								]),
-							A2(
-								$elm$core$List$map,
-								function (d) {
-									return A2(
-										$elm$html$Html$li,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text(d.texte)
-											]));
-								},
-								defsPour(t)))
-						]));
-			},
-			typesUniques));
-};
-var $author$project$View$messageBox = F2(
-	function (msg, estGagne) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'margin-top', '14px'),
-					A2($elm$html$Html$Attributes$style, 'padding', '12px'),
-					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-					A2(
-					$elm$html$Html$Attributes$style,
-					'background',
-					estGagne ? 'rgba(90, 200, 120, 0.25)' : 'rgba(255, 60, 60, 0.25)')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(msg)
-				]));
-	});
-var $author$project$View$separateur = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'height', '1px'),
-			A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.15)'),
-			A2($elm$html$Html$Attributes$style, 'margin', '16px 0')
-		]),
-	_List_Nil);
-var $author$project$View$titre = function (t) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-				A2($elm$html$Html$Attributes$style, 'margin-top', '6px')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(t)
-			]));
-};
-var $author$project$Types$NouveauMot = {$: 'NouveauMot'};
-var $author$project$Types$SaisieChangee = function (a) {
-	return {$: 'SaisieChangee', a: a};
-};
-var $author$project$Types$Verifier = {$: 'Verifier'};
+var $author$project$Types$Home = {$: 'Home'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -6873,19 +7208,185 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$View$bouton = F3(
-	function (label, action, couleur) {
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$View$boutonHome = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Events$onClick($author$project$Types$Home),
+			A2($elm$html$Html$Attributes$style, 'padding', '10px 14px'),
+			A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+			A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.18)'),
+			A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.08)'),
+			A2($elm$html$Html$Attributes$style, 'color', '#e8ecff'),
+			A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+			A2($elm$html$Html$Attributes$style, 'font-weight', '700')
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('Home')
+		]));
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $author$project$View$entete = A2(
+	$elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$h1,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'margin', '0'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '34px'),
+					A2($elm$html$Html$Attributes$style, 'letter-spacing', '0.2px')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('GuessIt')
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'opacity', '0.85'),
+					A2($elm$html$Html$Attributes$style, 'margin-top', '6px')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Bienvenue, lchoisis un niveau de difficulté et le mode de jeu.')
+				]))
+		]));
+var $author$project$View$barreHaut = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+				A2($elm$html$Html$Attributes$style, 'justify-content', 'space-between'),
+				A2($elm$html$Html$Attributes$style, 'align-items', 'flex-start'),
+				A2($elm$html$Html$Attributes$style, 'gap', '12px'),
+				A2($elm$html$Html$Attributes$style, 'margin-bottom', '18px')
+			]),
+		_List_fromArray(
+			[
+				$author$project$View$entete,
+				_Utils_eq(model.etat, $author$project$Types$Accueil) ? A2($elm$html$Html$div, _List_Nil, _List_Nil) : $author$project$View$boutonHome
+			]));
+};
+var $author$project$View$carte = function (contenu) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.06)'),
+				A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.10)'),
+				A2($elm$html$Html$Attributes$style, 'border-radius', '16px'),
+				A2($elm$html$Html$Attributes$style, 'padding', '18px'),
+				A2($elm$html$Html$Attributes$style, 'box-shadow', '0 10px 30px rgba(0,0,0,0.35)')
+			]),
+		_List_fromArray(
+			[contenu]));
+};
+var $author$project$View$badgeErreur = function (contenu) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'opacity', '0.9')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(contenu)
+			]));
+};
+var $author$project$View$badgeInfo = function (contenu) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'opacity', '0.9')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(contenu)
+			]));
+};
+var $author$project$Types$ChoisirDifficulte = function (a) {
+	return {$: 'ChoisirDifficulte', a: a};
+};
+var $author$project$Types$ChoisirMode = function (a) {
+	return {$: 'ChoisirMode', a: a};
+};
+var $author$project$Types$Classique = {$: 'Classique'};
+var $author$project$Types$Expert = {$: 'Expert'};
+var $author$project$Types$Express = {$: 'Express'};
+var $author$project$Types$Medium = {$: 'Medium'};
+var $author$project$Types$TempsExpressChange = function (a) {
+	return {$: 'TempsExpressChange', a: a};
+};
+var $author$project$Types$LancerJeu = {$: 'LancerJeu'};
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
+var $author$project$View$boutonJouer = function (pret) {
+	return A2(
+		$elm$html$Html$button,
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Types$LancerJeu),
+					A2($elm$html$Html$Attributes$style, 'padding', '10px 14px'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.12)'),
+					A2($elm$html$Html$Attributes$style, 'background', '#facd5b'),
+					A2($elm$html$Html$Attributes$style, 'color', '#000000'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', '700')
+				]),
+			pret ? _List_Nil : _List_fromArray(
+				[
+					$elm$html$Html$Attributes$disabled(true),
+					A2($elm$html$Html$Attributes$style, 'opacity', '0.5'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'not-allowed')
+				])),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('Jouer')
+			]));
+};
+var $author$project$View$boutonOption = F3(
+	function (selected, label, msg) {
 		return A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					$elm$html$Html$Events$onClick(action),
-					A2($elm$html$Html$Attributes$style, 'background', couleur),
-					A2($elm$html$Html$Attributes$style, 'color', 'white'),
-					A2($elm$html$Html$Attributes$style, 'border', 'none'),
-					A2($elm$html$Html$Attributes$style, 'border-radius', '10px'),
+					$elm$html$Html$Events$onClick(msg),
 					A2($elm$html$Html$Attributes$style, 'padding', '10px 14px'),
-					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer')
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', '800'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'border',
+					selected ? '1px solid rgba(250,205,91,0.9)' : '1px solid rgba(255,255,255,0.18)'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'background',
+					selected ? '#facd5b' : 'rgba(255,255,255,0.08)'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'color',
+					selected ? '#000000' : '#e8ecff')
 				]),
 			_List_fromArray(
 				[
@@ -6893,6 +7394,36 @@ var $author$project$View$bouton = F3(
 				]));
 	});
 var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$max = $elm$html$Html$Attributes$stringProperty('max');
+var $author$project$View$messageBox = F2(
+	function (msg, estGagne) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'margin-top', '14px'),
+					A2($elm$html$Html$Attributes$style, 'padding', '12px 12px'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.14)'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'background',
+					estGagne ? 'rgba(90, 200, 120, 0.20)' : 'rgba(255, 60, 60, 0.18)')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(msg)
+				]));
+	});
+var $elm$html$Html$Attributes$min = $elm$html$Html$Attributes$stringProperty('min');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -6924,89 +7455,392 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $author$project$View$sectionTitre = function (t) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'margin-top', '6px'),
+				A2($elm$html$Html$Attributes$style, 'font-weight', '800'),
+				A2($elm$html$Html$Attributes$style, 'opacity', '0.95')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(t)
+			]));
+};
+var $author$project$View$separateur = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'height', '1px'),
+			A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.12)'),
+			A2($elm$html$Html$Attributes$style, 'margin', '16px 0')
+		]),
+	_List_Nil);
+var $elm$html$Html$Attributes$step = function (n) {
+	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
+};
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$View$zoneReponse = F2(
-	function (model, peutRepondre) {
-		return peutRepondre ? A2(
+var $author$project$View$vueAccueil = function (model) {
+	var pret = (!_Utils_eq(model.mode, $elm$core$Maybe$Nothing)) && (!_Utils_eq(model.difficulte, $elm$core$Maybe$Nothing));
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$author$project$View$sectionTitre('Difficulté'),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'gap', '10px'),
+						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
+					]),
+				_List_fromArray(
+					[
+						A3(
+						$author$project$View$boutonOption,
+						_Utils_eq(
+							model.difficulte,
+							$elm$core$Maybe$Just($author$project$Types$Beginner)),
+						'Beginner',
+						$author$project$Types$ChoisirDifficulte($author$project$Types$Beginner)),
+						A3(
+						$author$project$View$boutonOption,
+						_Utils_eq(
+							model.difficulte,
+							$elm$core$Maybe$Just($author$project$Types$Medium)),
+						'Medium',
+						$author$project$Types$ChoisirDifficulte($author$project$Types$Medium)),
+						A3(
+						$author$project$View$boutonOption,
+						_Utils_eq(
+							model.difficulte,
+							$elm$core$Maybe$Just($author$project$Types$Expert)),
+						'Expert',
+						$author$project$Types$ChoisirDifficulte($author$project$Types$Expert))
+					])),
+				$author$project$View$separateur,
+				$author$project$View$sectionTitre('Mode'),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'gap', '10px'),
+						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
+					]),
+				_List_fromArray(
+					[
+						A3(
+						$author$project$View$boutonOption,
+						_Utils_eq(
+							model.mode,
+							$elm$core$Maybe$Just($author$project$Types$Classique)),
+						'Classique',
+						$author$project$Types$ChoisirMode($author$project$Types$Classique)),
+						A3(
+						$author$project$View$boutonOption,
+						_Utils_eq(
+							model.mode,
+							$elm$core$Maybe$Just($author$project$Types$Express)),
+						'Express',
+						$author$project$Types$ChoisirMode($author$project$Types$Express))
+					])),
+				function () {
+				var _v0 = model.mode;
+				if ((_v0.$ === 'Just') && (_v0.a.$ === 'Express')) {
+					var _v1 = _v0.a;
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								'Temps : ' + ($elm$core$String$fromInt(model.tempsExpress) + ' s')),
+								A2(
+								$elm$html$Html$input,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('range'),
+										$elm$html$Html$Attributes$min('15'),
+										$elm$html$Html$Attributes$max('120'),
+										$elm$html$Html$Attributes$step('15'),
+										$elm$html$Html$Attributes$value(
+										$elm$core$String$fromInt(model.tempsExpress)),
+										$elm$html$Html$Events$onInput($author$project$Types$TempsExpressChange),
+										A2($elm$html$Html$Attributes$style, 'width', '100%')
+									]),
+								_List_Nil)
+							]));
+				} else {
+					return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+				}
+			}(),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'margin-top', '14px')
+					]),
+				_List_fromArray(
+					[
+						$author$project$View$boutonJouer(pret)
+					])),
+				(model.message !== '') ? A2($author$project$View$messageBox, model.message, false) : A2($elm$html$Html$div, _List_Nil, _List_Nil)
+			]));
+};
+var $author$project$Types$MotSuivant = {$: 'MotSuivant'};
+var $author$project$View$boutonPrincipal = F2(
+	function (label, msg) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(msg),
+					A2($elm$html$Html$Attributes$style, 'padding', '10px 14px'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.12)'),
+					A2($elm$html$Html$Attributes$style, 'background', '#facd5b'),
+					A2($elm$html$Html$Attributes$style, 'color', '#000000'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', '800')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	});
+var $author$project$View$vueGagne = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$author$project$View$sectionTitre('Bravo'),
+				A2($author$project$View$messageBox, model.message, true),
+				A2($author$project$View$boutonPrincipal, 'Mot suivant', $author$project$Types$MotSuivant)
+			]));
+};
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$View$badgeChiffre = F2(
+	function (titreTxt, valeurTxt) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'inline-flex'),
+					A2($elm$html$Html$Attributes$style, 'gap', '8px'),
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+					A2($elm$html$Html$Attributes$style, 'padding', '6px 10px'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '999px'),
+					A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.08)'),
+					A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.12)'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '16px')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'opacity', '0.75')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(titreTxt)
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'font-weight', '800')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(valeurTxt)
+						]))
+				]));
+	});
+var $author$project$View$bandeauExpress = function (model) {
+	var _v0 = model.mode;
+	if ((_v0.$ === 'Just') && (_v0.a.$ === 'Express')) {
+		var _v1 = _v0.a;
+		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 					A2($elm$html$Html$Attributes$style, 'gap', '10px'),
-					A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+					A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+					A2($elm$html$Html$Attributes$style, 'margin', '8px 0 10px 0')
 				]),
 			_List_fromArray(
 				[
 					A2(
-					$elm$html$Html$input,
+					$author$project$View$badgeChiffre,
+					'Temps',
+					$elm$core$String$fromInt(model.tempsRestant) + 's'),
+					A2(
+					$author$project$View$badgeChiffre,
+					'Score',
+					$elm$core$String$fromInt(model.score))
+				]));
+	} else {
+		return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+	}
+};
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$View$listeDefinitions = function (defs) {
+	return $elm$core$List$isEmpty(defs) ? A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'opacity', '0.85')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('Aucune définition trouvée.')
+			])) : A2(
+		$elm$html$Html$ul,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'padding-left', '18px'),
+				A2($elm$html$Html$Attributes$style, 'line-height', '1.6')
+			]),
+		A2(
+			$elm$core$List$map,
+			function (d) {
+				return A2(
+					$elm$html$Html$li,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$value(model.saisie),
-							$elm$html$Html$Attributes$placeholder('Tape le mot ici'),
-							$elm$html$Html$Events$onInput($author$project$Types$SaisieChangee),
-							A2($elm$html$Html$Attributes$style, 'flex', '1'),
-							A2($elm$html$Html$Attributes$style, 'padding', '10px'),
-							A2($elm$html$Html$Attributes$style, 'border-radius', '10px')
+							A2($elm$html$Html$Attributes$style, 'margin', '6px 0')
 						]),
-					_List_Nil),
-					A3($author$project$View$bouton, 'Vérifier', $author$project$Types$Verifier, '#5b7cfa'),
-					A3($author$project$View$bouton, 'Changer le mot', $author$project$Types$NouveauMot, '#444')
-				])) : A2(
-			$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(d.typeMot + (' : ' + d.texte))
+						]));
+			},
+			defs));
+};
+var $author$project$Types$SaisieChangee = function (a) {
+	return {$: 'SaisieChangee', a: a};
+};
+var $author$project$Types$Verifier = {$: 'Verifier'};
+var $author$project$View$boutonSecondaire = F2(
+	function (label, msg) {
+		return A2(
+			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+					$elm$html$Html$Events$onClick(msg),
+					A2($elm$html$Html$Attributes$style, 'padding', '10px 14px'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.18)'),
+					A2($elm$html$Html$Attributes$style, 'background', 'rgba(255,255,255,0.08)'),
+					A2($elm$html$Html$Attributes$style, 'color', '#e8ecff'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', '800')
 				]),
 			_List_fromArray(
 				[
-					A3($author$project$View$bouton, 'Autre mot', $author$project$Types$NouveauMot, '#5b7cfa')
+					$elm$html$Html$text(label)
 				]));
 	});
-var $author$project$View$vueJeu = F2(
-	function (model, peutRepondre) {
-		return A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$author$project$View$titre('Définitions'),
-					$author$project$View$listeDefinitions(model.definitions),
-					$author$project$View$separateur,
-					$author$project$View$titre('Ta réponse'),
-					A2($author$project$View$zoneReponse, model, peutRepondre),
-					(model.message !== '') ? A2(
-					$author$project$View$messageBox,
-					model.message,
-					_Utils_eq(model.etat, $author$project$Types$Gagne)) : A2($elm$html$Html$div, _List_Nil, _List_Nil)
-				]));
-	});
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $author$project$View$zoneReponse = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+				A2($elm$html$Html$Attributes$style, 'gap', '10px'),
+				A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+				A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
+				A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$input,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$value(model.saisie),
+						$elm$html$Html$Attributes$placeholder('Tape le mot'),
+						$elm$html$Html$Events$onInput($author$project$Types$SaisieChangee),
+						A2($elm$html$Html$Attributes$style, 'flex', '1'),
+						A2($elm$html$Html$Attributes$style, 'min-width', '220px'),
+						A2($elm$html$Html$Attributes$style, 'padding', '10px 12px'),
+						A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+						A2($elm$html$Html$Attributes$style, 'border', '1px solid rgba(255,255,255,0.18)'),
+						A2($elm$html$Html$Attributes$style, 'background', 'rgba(0,0,0,0.25)'),
+						A2($elm$html$Html$Attributes$style, 'color', '#e8ecff'),
+						A2($elm$html$Html$Attributes$style, 'outline', 'none')
+					]),
+				_List_Nil),
+				A2($author$project$View$boutonPrincipal, 'Vérifier', $author$project$Types$Verifier),
+				A2($author$project$View$boutonSecondaire, 'Mot suivant', $author$project$Types$MotSuivant)
+			]));
+};
+var $author$project$View$vueJeu = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$author$project$View$bandeauExpress(model),
+				$author$project$View$sectionTitre('Définitions'),
+				$author$project$View$listeDefinitions(model.definitionsVisibles),
+				$author$project$View$separateur,
+				$author$project$View$sectionTitre('Ta réponse'),
+				$author$project$View$zoneReponse(model),
+				(model.message !== '') ? A2($author$project$View$messageBox, model.message, false) : A2($elm$html$Html$div, _List_Nil, _List_Nil)
+			]));
+};
+var $author$project$Types$Rejouer = {$: 'Rejouer'};
+var $author$project$View$vueTempsEcoule = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$author$project$View$sectionTitre('Temps écoulé'),
+				A2(
+				$author$project$View$messageBox,
+				'Score : ' + $elm$core$String$fromInt(model.score),
+				false),
+				A2($author$project$View$boutonPrincipal, 'Rejouer', $author$project$Types$Rejouer)
+			]));
+};
 var $author$project$View$vueSelonEtat = function (model) {
 	var _v0 = model.etat;
 	switch (_v0.$) {
+		case 'Accueil':
+			return $author$project$View$vueAccueil(model);
 		case 'ChargementMots':
-			return $author$project$View$texteSimple('Chargement des mots...');
+			return $author$project$View$badgeInfo('Chargement des mots...');
 		case 'ChoixMot':
-			return $author$project$View$texteSimple('Choix du mot...');
+			return $author$project$View$badgeInfo('Choix du mot...');
 		case 'ChargementDefinitions':
-			return $author$project$View$texteSimple('Chargement des définitions...');
+			return $author$project$View$badgeInfo('Chargement des définitions...');
 		case 'Pret':
-			return A2($author$project$View$vueJeu, model, true);
+			return $author$project$View$vueJeu(model);
 		case 'Gagne':
-			return A2($author$project$View$vueJeu, model, false);
-		case 'Perdu':
-			return A2($author$project$View$vueJeu, model, false);
+			return $author$project$View$vueGagne(model);
+		case 'TempsEcoule':
+			return $author$project$View$vueTempsEcoule(model);
 		default:
-			var msg = _v0.a;
-			return $author$project$View$texteSimple('Erreur : ' + msg);
+			var msgErr = _v0.a;
+			return $author$project$View$badgeErreur('Erreur : ' + msgErr);
 	}
 };
 var $author$project$View$view = function (model) {
@@ -7026,12 +7860,12 @@ var $author$project$View$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'max-width', '860px'),
+						A2($elm$html$Html$Attributes$style, 'max-width', '920px'),
 						A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
 					]),
 				_List_fromArray(
 					[
-						$author$project$View$entete,
+						$author$project$View$barreHaut(model),
 						$author$project$View$carte(
 						$author$project$View$vueSelonEtat(model))
 					]))
@@ -7039,10 +7873,10 @@ var $author$project$View$view = function (model) {
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
-		init: $author$project$Main$init,
-		subscriptions: function (_v0) {
-			return $elm$core$Platform$Sub$none;
+		init: function (_v0) {
+			return _Utils_Tuple2($author$project$Types$modeleInitial, $elm$core$Platform$Cmd$none);
 		},
+		subscriptions: $author$project$Main$subscriptions,
 		update: $author$project$Main$update,
 		view: $author$project$View$view
 	});
