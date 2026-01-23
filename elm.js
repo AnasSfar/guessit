@@ -5426,7 +5426,7 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Types$Accueil = {$: 'Accueil'};
-var $author$project$Types$modeleInitial = {definitionsVisibles: _List_Nil, difficulte: $elm$core$Maybe$Nothing, etat: $author$project$Types$Accueil, message: '', mode: $elm$core$Maybe$Nothing, motSecret: '', mots: _List_Nil, saisie: '', score: 0, tempsExpress: 60, tempsRestant: 0};
+var $author$project$Types$modeleInitial = {definitionsVisibles: _List_Nil, difficulte: $elm$core$Maybe$Nothing, etat: $author$project$Types$Accueil, message: '', mode: $elm$core$Maybe$Nothing, motSecret: '', mots: _List_Nil, saisie: '', score: 0, tempsExpress: 300, tempsRestant: 0};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Types$Tick = {$: 'Tick'};
