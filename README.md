@@ -1,6 +1,6 @@
 # 🎯 GuessIt
 
-**GuessIt** est un jeu de devinettes de mots développé en **Elm**.  Ce projet a été réalisé par Farah Gattoufi, Yousra Mounim et Anas Sfar.
+**GuessIt** est un jeu de devinettes de mots développé en **Elm**.  
 À partir de définitions, le joueur doit retrouver le mot correspondant selon le **mode de jeu** et la **difficulté** choisis.
 
 Le projet est jouable directement dans le navigateur et déployé via **GitHub Pages**.
@@ -60,3 +60,4 @@ Assure-toi d’être dans le dossier contenant `index.html`, `elm.js` et `README
 ```bash
 elm reactor
 
+## Ce projet a été réalisé par Farah Gattoufi, Yousra Mounim et Anas Sfar.
