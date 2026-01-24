@@ -23,7 +23,7 @@ Le projet est jouable directement dans le navigateur et déployé via **GitHub P
   - la bonne réponse est affichée
   - le score diminue
   - passage automatique au mot suivant
-
+- Si vous voulez connaître la réponse avant de passer au mot suivant, il suffit d'appuyer sur le bouton "Vérifier" même si vous n'avez rien saisi.
 ---
 
 ## 🎚️ Difficultés
