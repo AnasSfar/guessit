@@ -7328,7 +7328,8 @@ var $author$project$View$barreHaut = function (model) {
 				_Utils_ap(
 					_List_fromArray(
 						[
-							A2($author$project$View$boutonLienCompact, '📄 README', 'README.md')
+							A2($author$project$View$boutonLienCompact, "📄 README", "https://github.com/anassfar/guessit#readme"),
+
 						]),
 					_Utils_eq(model.k, $author$project$Types$Accueil) ? _List_Nil : _List_fromArray(
 						[$author$project$View$boutonHome])))
