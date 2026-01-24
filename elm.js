@@ -7300,7 +7300,8 @@ var $author$project$View$entete = A2(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('Bienvenue dans GuessIt, votre jeu préféré, le but du jeu est de deviner le mot secret grâce à des définitions. \n Choisis un niveau de difficulté (Beginner, Medium, Expert) et le mode de jeu (Classique, Express).')
+					$elm$html$Html$text('Bienvenue dans GuessIt, votre jeu préféré, le but du jeu est de deviner le mot secret grâce à des définitions. \n Choisis un niveau de difficulté (Beginner, Medium, Expert) et le mode de jeu (Classique, Express).'),
+					$elm$html$Html$text('Projet réalisé dans le cadre des études par Farah Gattoufi, Yousra Mounim et Anas Sfar. © 2026 – Tous droits réservés.')
 				]))
 		]));
 var $author$project$View$barreHaut = function (model) {
