@@ -1,5 +1,5 @@
 # 🎯 GuessIt
-## Ce projet a été réalisé par Farah Gattoufi, Yousra Mounim et Anas Sfar.
+## © Ce projet a été réalisé par Farah Gattoufi, Yousra Mounim et Anas Sfar dans un cadre pédagogique. 
 
 **GuessIt** est un jeu de devinettes de mots développé en **Elm**.  
 À partir de définitions, le joueur doit retrouver le mot correspondant selon le **mode de jeu** et la **difficulté** choisis.
