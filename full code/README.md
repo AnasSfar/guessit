@@ -42,10 +42,9 @@ La difficulté influence le nombre et le type de définitions affichées.
 
 ---
 
-### En local (recommandé)
+### En local (après avoir installer tout les fichiers)
 
 Assure-toi d’être dans le dossier contenant `index.html`, `elm.js` et `README.md`.
 
-#### Option 1 — Serveur Elm
 ```bash
 elm reactor
