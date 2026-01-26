@@ -4,7 +4,7 @@
 **GuessIt** est un jeu de devinettes de mots développé en **Elm**.  
 À partir de définitions, le joueur doit retrouver le mot correspondant selon le **mode de jeu** et la **difficulté** choisis.
 
-Le projet est jouable directement dans le navigateur et déployé via **GitHub Pages**.
+Le projet est jouable directement dans le navigateur et déployé via **GitHub Pages**. Lien du jeu : https://anassfar.github.io/guessit/
 
 ---
 
@@ -17,11 +17,11 @@ Le projet est jouable directement dans le navigateur et déployé via **GitHub P
 - Mode idéal pour découvrir le jeu et apprendre
 
 ### ⏱️ Mode Express
-- Temps limité (configurable avant de lancer la partie)
+- Temps limité (sélectionnable via un **curseur** avant de lancer la partie)
 - **Une seule tentative par mot**
 - En cas d’erreur :
   - la bonne réponse est affichée
-  - le score diminue
+  - le score diminue (-1)
   - passage automatique au mot suivant
 - Si vous voulez connaître la réponse avant de passer au mot suivant, il suffit d'appuyer sur le bouton "Vérifier" même si vous n'avez rien saisi.
 ---
@@ -36,16 +36,6 @@ La difficulté influence le nombre et le type de définitions affichées.
 
 ---
 
-## 🧮 Score & Temps (Mode Express)
-
-- ⏱️ Le temps est sélectionnable via un **curseur** avant de lancer la partie
-- 🧮 Le score :
-  - augmente de +1 pour une bonne réponse
-  - diminue de −1 pour une mauvaise réponse
-- Fin de partie lorsque le temps est écoulé
-
----
-
 ## 🚀 Lancer le jeu
 
 ### En ligne (GitHub Pages)
@@ -57,7 +47,7 @@ La difficulté influence le nombre et le type de définitions affichées.
 
 Assure-toi d’être dans le dossier contenant `index.html`, `elm.js` et `README.md`.
 
-#### Option 1 — Serveur Elm
 ```bash
 elm reactor
+
 
