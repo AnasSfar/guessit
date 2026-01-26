@@ -49,5 +49,3 @@ Assure-toi d’être dans le dossier contenant `index.html`, `elm.js` et `README
 
 ```bash
 elm reactor
-
-
